@@ -1,0 +1,602 @@
+{
+  "name": "Whatsapp Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "messages"
+        ],
+        "options": {}
+      },
+      "type": "n8n-nodes-base.whatsAppTrigger",
+      "typeVersion": 1,
+      "position": [
+        -440,
+        -140
+      ],
+      "id": "3583f7f6-e106-4e37-bf13-6582c48104a5",
+      "name": "WhatsApp Trigger",
+      "webhookId": "WEBHOOK_ID_HERE",
+      "credentials": {
+        "id": "REPLACE_ID",
+        "name": "REPLACE_CREDENTIAL_NAME"
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "634512936417126",
+        "recipientPhoneNumber": "13XXXXXXX48",
+        "textBody": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        1520,
+        -140
+      ],
+      "id": "e2eb961f-019b-49c3-82bf-5705c2c9550f",
+      "name": "WhatsApp Business Cloud",
+      "webhookId": "WEBHOOK_ID_HERE",
+      "credentials": {
+        "id": "REPLACE_ID",
+        "name": "REPLACE_CREDENTIAL_NAME"
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.text }}",
+        "options": {
+          "systemMessage": "You are a helpful assistant"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        1060,
+        -140
+      ],
+      "id": "788dfb0c-468e-4438-9fd9-2700aa58e554",
+      "name": "AI Agent",
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        1060,
+        120
+      ],
+      "id": "061a5a65-868d-41c7-8d46-62242f2433a1",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "id": "REPLACE_ID",
+        "name": "REPLACE_CREDENTIAL_NAME"
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('WhatsApp Trigger').item.json.contacts[0].wa_id }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1220,
+        120
+      ],
+      "id": "057de898-776c-4759-903f-cd2fbba2ae85",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.messages[0].text.body }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    },
+                    "id": "69c94d1a-02a0-4b35-856c-fcf5d5926f45"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "text"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "aa95808f-9d5a-431b-884a-4ad9d8aec9ce",
+                    "leftValue": "={{ $json.messages[0].audio.id }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "audio"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "9c55fe12-aa08-434a-a1cd-0a8b4d5d3d93",
+                    "leftValue": "={{ $json.messages[0].image.id }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "image"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -200,
+        -140
+      ],
+      "id": "61154a34-e70f-4e26-a169-6fa44a58a386",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "resource": "media",
+        "operation": "mediaUrlGet",
+        "mediaGetId": "={{ $json.messages[0].audio.id }}"
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        80,
+        -140
+      ],
+      "id": "072dc555-0bf8-4f6d-a86b-d2707000c2ca",
+      "name": "WhatsApp Business Cloud1",
+      "webhookId": "WEBHOOK_ID_HERE",
+      "credentials": {
+        "id": "REPLACE_ID",
+        "name": "REPLACE_CREDENTIAL_NAME"
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "whatsAppApi",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "[\n  {\n    \"name\" : \"Authorization\",\n    \"value\" : \"Bearer YOUR_WHATSAPP_API_TOKEN_HERE\"\n  }\n]",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        300,
+        -140
+      ],
+      "id": "a628ce9c-cd74-40ec-bbd6-086fe6499fa0",
+      "name": "HTTP Request",
+      "credentials": {
+        "id": "REPLACE_ID",
+        "name": "REPLACE_CREDENTIAL_NAME"
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.deepgram.com/v1/listen",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_API_TOKEN"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        540,
+        -140
+      ],
+      "id": "d04b0030-e5e3-4f68-9303-958f9ddccebf",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "33741af8-8f3b-4e53-ad26-fb6b3a827bcc",
+              "name": "text",
+              "value": "={{ $json.results.channels[0].alternatives[0].transcript }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        760,
+        -140
+      ],
+      "id": "20d1cba3-c658-4533-8508-e7b4b003ad0e",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "resource": "media",
+        "operation": "mediaUrlGet",
+        "mediaGetId": "={{ $json.messages[0].image.id }}"
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        80,
+        100
+      ],
+      "id": "5773a835-5e28-46c7-a62c-e1536af18030",
+      "name": "WhatsApp Business Cloud2",
+      "webhookId": "WEBHOOK_ID_HERE",
+      "credentials": {
+        "id": "REPLACE_ID",
+        "name": "REPLACE_CREDENTIAL_NAME"
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "whatsAppApi",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "[\n  {\n    \"name\" : \"Authorization\",\n    \"value\" : \"Bearer YOUR_WHATSAPP_API_TOKEN_HERE\"\n  }\n]",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        320,
+        100
+      ],
+      "id": "6a2b4aa3-ede2-43f3-b08f-147ef6535d32",
+      "name": "HTTP Request2",
+      "credentials": {
+        "id": "REPLACE_ID",
+        "name": "REPLACE_CREDENTIAL_NAME"
+      }
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "text": "analyze image properly and give answer precisely",
+        "inputType": "base64",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        540,
+        100
+      ],
+      "id": "5e11b40a-b748-446f-a7d1-9debadb709de",
+      "name": "OpenAI1",
+      "credentials": {
+        "id": "REPLACE_ID",
+        "name": "REPLACE_CREDENTIAL_NAME"
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "db084747-67e4-4983-9fc6-68cfad251676",
+              "name": "text",
+              "value": "={{ $json.messages[0].text.body }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        440,
+        -340
+      ],
+      "id": "f76dd9fa-5a0d-44c2-b4e7-50f11f41181b",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0b874b90-af9c-4b07-84e9-df201ae7da8d",
+              "name": "",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "6e7bd4ed-bcb6-46ab-b85b-f9704dfcb61a",
+              "name": "text",
+              "value": "={{ $json.content }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        760,
+        100
+      ],
+      "id": "5b8c8d38-f719-43d1-a261-f99247eb0121",
+      "name": "Edit Fields2"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "WhatsApp Trigger": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "WhatsApp Business Cloud",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WhatsApp Business Cloud1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WhatsApp Business Cloud2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [],
+        []
+      ]
+    },
+    "WhatsApp Business Cloud1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WhatsApp Business Cloud2": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "OpenAI1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "ce29f72c-ad77-41d5-9744-c5d2d20639e5",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c460137c27f11eb9c8ca1ecff3175fb6098426374a264e16f5bd3a3ceec6e415"
+  },
+  "id": "KbJ6dqKCJ0IQ0BGS",
+  "tags": []
+}
